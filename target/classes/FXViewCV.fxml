@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.effect.Glow?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<BorderPane fx:id="bgPane" prefHeight="520.0" prefWidth="550.0" styleClass="BG" stylesheets="@button.css"
+            xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="consumerApp.FXConsumerController">
+    <bottom>
+        <GridPane style="-fx-background-color: #333;" BorderPane.alignment="CENTER">
+            <HBox alignment="center" spacing="10" GridPane.rowIndex="2">
+                <VBox alignment="CENTER">
+                    <Button fx:id="button1" disable="true" onAction="#replayCamera" prefHeight="27.0" prefWidth="107.0"
+                            stylesheets="@button.css" text="From Beginning" userData="replay">
+                        <VBox.margin>
+                            <Insets bottom="10.0" left="20.0" right="5.0"/>
+                        </VBox.margin>
+                    </Button>
+                </VBox>
+
+                <VBox alignment="center">
+                    <Button fx:id="button" disable="true" onAction="#startCamera" prefHeight="30.0" prefWidth="116.0"
+                            stylesheets="@button.css" text="Stop">
+                        <VBox.margin>
+                            <Insets bottom="10.0" left="20.0" right="5.0"/>
+                        </VBox.margin>
+                    </Button>
+                </VBox>
+                <VBox alignment="center">
+                    <Button fx:id="button2" disable="true" mnemonicParsing="false" onAction="#forwardVideo"
+                            stylesheets="@button.css" text="+10">
+                        <VBox.margin>
+                            <Insets bottom="10.0" left="20.0" right="5.0" top="5.0"/>
+                        </VBox.margin>
+                    </Button>
+                </VBox>
+            </HBox>
+
+            <VBox alignment="CENTER" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                <Button fx:id="button3" disable="true" mnemonicParsing="false" onAction="#rewindVideo"
+                        stylesheets="@button.css" text="-10">
+                    <VBox.margin>
+                        <Insets bottom="10.0" left="20.0" right="5.0" top="5.0"/>
+                    </VBox.margin>
+                </Button>
+            </VBox>
+            <columnConstraints>
+                <ColumnConstraints/>
+                <ColumnConstraints/>
+                <ColumnConstraints/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints/>
+                <RowConstraints/>
+                <RowConstraints/>
+            </rowConstraints>
+        </GridPane>
+    </bottom>
+    <center>
+        <ImageView fx:id="currentFrame" fitHeight="450.0" fitWidth="550.0" pickOnBounds="true" preserveRatio="true"
+                   BorderPane.alignment="CENTER">
+            <BorderPane.margin>
+                <Insets left="3.0" right="3.0"/>
+            </BorderPane.margin>
+        </ImageView>
+    </center>
+    <right>
+        <VBox prefHeight="200.0" prefWidth="100.0" style="-fx-background-color: #333;" BorderPane.alignment="CENTER">
+            <children>
+                <HBox alignment="TOP_CENTER" prefHeight="100.0" prefWidth="200.0"
+                      style="-fx-font-weight: bold; -fx-text-fill: #e53935;">
+                    <children>
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                            <children>
+                                <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" prefHeight="17.0"
+                                       prefWidth="72.0" style="-fx-font-size: 14px;" text="Live-Video"
+                                       textAlignment="JUSTIFY" textFill="#eeecec" wrapText="true">
+                                    <padding>
+                                        <Insets bottom="8.0"/>
+                                    </padding>
+                                    <VBox.margin>
+                                        <Insets left="10.0"/>
+                                    </VBox.margin>
+                                </Label>
+                                <Label alignment="CENTER_RIGHT" contentDisplay="CENTER" style="-fx-font-size: 14px;"
+                                       text="Streaming" textAlignment="JUSTIFY" textFill="WHITE">
+                                    <VBox.margin>
+                                        <Insets left="13.0"/>
+                                    </VBox.margin>
+                                </Label>
+                            </children>
+                        </VBox>
+                    </children>
+                    <effect>
+                        <Glow level="0.88"/>
+                    </effect>
+                </HBox>
+                <HBox prefHeight="100.0" prefWidth="200.0">
+                    <children>
+                        <Label text="Streaming App" HBox.hgrow="ALWAYS"/>
+                    </children>
+                </HBox>
+                <HBox prefHeight="100.0" prefWidth="200.0">
+                    <children>
+                        <Button fx:id="stream1" alignment="CENTER" contentDisplay="TOP" mnemonicParsing="false"
+                                onAction="#startCamera" prefHeight="25.0" prefWidth="101.0"
+                                style="-fx-background-color: #333; -fx-font-weight: bold; -fx-text-fill: #ffcdd2;"
+                                text="Live-1" textAlignment="JUSTIFY" textFill="WHITE" underline="true"
+                                userData="live1" wrapText="true" HBox.hgrow="NEVER">
+                            <cursor>
+                                <Cursor fx:constant="DEFAULT"/>
+                            </cursor>
+                        </Button>
+                    </children>
+                </HBox>
+                <HBox prefHeight="100.0" prefWidth="200.0">
+                    <children>
+                        <Button fx:id="stream2" contentDisplay="TOP" lineSpacing="1.0" mnemonicParsing="false"
+                                onAction="#startCamera" prefHeight="25.0" prefWidth="115.0"
+                                style="-fx-background-color: #333; -fx-font-weight: bold; -fx-text-fill: #ffcdd2;"
+                                text="Live-2" textFill="WHITE" underline="true" userData="live2"/>
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </right>
+    <left>
+        <VBox prefHeight="200.0" prefWidth="5.0" style="-fx-background-color: #333;" BorderPane.alignment="CENTER"/>
+    </left>
+    <top>
+        <HBox prefHeight="5.0" prefWidth="5.0" style="-fx-background-color: #333;" BorderPane.alignment="CENTER"/>
+    </top>
+</BorderPane>
