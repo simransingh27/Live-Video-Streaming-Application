@@ -8,7 +8,6 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -20,8 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Properties;
-import java.util.UUID;
+import java.util.Collections;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -51,9 +49,6 @@ public class FXConsumerController {
     private Button stream1;
     @FXML
     private Button stream2;
-    @FXML
-    private Button stream3;
-
     // the FXML image view
     @FXML
     private ImageView currentFrame;
@@ -65,14 +60,14 @@ public class FXConsumerController {
     private String globalTopicName = null;
 
 
-    public FXConsumerController() throws IOException {
+    public FXConsumerController() {
 
     }
 
     /**
      * Forward functionality
      */
-    public void forwardVideo(ActionEvent actionEvent) {
+    public void forwardVideo() {
         currentValueOfButton = "forward";
         currentOffset += 340;
         System.out.println("value of current offset in forward : " + currentOffset);
@@ -82,7 +77,7 @@ public class FXConsumerController {
     /**
      * Rewind functionality.
      */
-    public void rewindVideo(ActionEvent actionEvent) {
+    public void rewindVideo() {
         if (currentOffset >= 0) {
             currentValueOfButton = "rewind";
             currentOffset -= 310;
@@ -91,7 +86,6 @@ public class FXConsumerController {
             currentOffset = 0;
         }
     }
-
 
     /**
      * The action triggered by pushing the button on the GUI
@@ -111,24 +105,13 @@ public class FXConsumerController {
             button1.setText("Stop");
             final String[] topicName = {globalTopicName};
             Node node = (Node) event.getSource();
-            String data = (String) node.getUserData();
-            System.out.println("testing for event handler : " + data);
             Runnable frameGrabber = new Runnable() {
                 @Override
                 public void run() {
                     if (topicName[0] != null) {
-                        Long actualPosition = null;
                         TopicPartition actualTopicPartition = new TopicPartition(topicName[0], 0);
-                        Properties props = new Properties();
-                        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-                        props.put(ConsumerConfig.GROUP_ID_CONFIG, UUID.randomUUID().toString()); // randomise this
-                        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
-                        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer");
-                        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-                        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-                        KafkaConsumer consumerReplay = new KafkaConsumer(props);
+                        KafkaConsumer consumerReplay = new KafkaConsumer(Property.loadPropertiesReplay());
                         consumerReplay.subscribe(Arrays.asList(topicName[0]));
-                        //System.out.println("replay starts here");
                         try {
                             int attemptCount = 0;
                             while (attemptCount <= 3) {
@@ -136,24 +119,16 @@ public class FXConsumerController {
                                 if (recordReplay.count() > 0) {
                                     if (replayActive) {
                                         for (ConsumerRecord<String, byte[]> record : recordReplay) {
-                                            ByteArrayInputStream bis = new ByteArrayInputStream(record.value());
-                                            BufferedImage inputImage = ImageIO.read(bis);
-                                            actualPosition = consumerReplay.position(actualTopicPartition);
                                             if (currentValueOfButton == "forward") {
                                                 consumerReplay.seek(actualTopicPartition, currentOffset);
-                                                System.out.println("current offset after forward pressed : " + currentOffset);
+                                                currentValueOfButton = null;
                                             } else if (currentValueOfButton == "rewind") {
                                                 consumerReplay.seek(actualTopicPartition, currentOffset);
-                                                System.out.println("current offset after  rewind pressed : " + currentOffset);
+                                                currentValueOfButton = null;
                                             }
                                             currentOffset = consumerReplay.position(actualTopicPartition);
-                                            System.out.println("replay video");
-                                            currentValueOfButton = null;
-
-                                            consumerReplay.commitAsync();
-                                            Thread.sleep(33);
-                                            Image imageToShow = SwingFXUtils.toFXImage(inputImage, null);
-                                            updateImageView(currentFrame, imageToShow);
+                                            Thread.sleep(33);//control frame rate.
+                                            updateImageView(currentFrame, FXConsumerController.renderVideo(record.value()));
                                             consumerReplay.commitAsync();
                                         }
                                     } else {
@@ -202,8 +177,6 @@ public class FXConsumerController {
             boolean stream1Value = stream1.isDisable();
             boolean stream2Value = stream2.isDisable();
 
-            System.out.println("value of forward button : " + button2Value);
-            System.out.println("value of rewind button : " + button3Value);
             if (!button2Value) {
                 button2.setDisable(true);
             }
@@ -222,63 +195,40 @@ public class FXConsumerController {
                 topicName[0] = data;
                 globalTopicName = topicName[0];
             }
-            Runnable imageGrab = new Runnable() {
-                @Override
-                public void run() {
-                    Long actualPosition = null;
-                    TopicPartition actualTopicPartition = new TopicPartition(topicName[0], 0);
-                    Properties props = new Properties();
-                    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-                    props.put(ConsumerConfig.GROUP_ID_CONFIG, UUID.randomUUID().toString()); // randomise this
-                    props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
-                    props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer");
-                    props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-                    props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-                    KafkaConsumer consumerLiveVideo = new KafkaConsumer(props);
-                    consumerLiveVideo.subscribe(Arrays.asList(topicName[0]));
-                    try {
-                        int attemptCount = 0;
-                        int i = 0;
-                        while (attemptCount <= 3) {
-                            ConsumerRecords<String, byte[]> recordsLive = consumerLiveVideo.poll(Duration.ofMillis(100));
-                            if (recordsLive.count() > 0) {
-                                if (cameraActive) {
-                                    for (ConsumerRecord<String, byte[]> record : recordsLive) {
-                                        actualPosition = consumerLiveVideo.position(actualTopicPartition);
-                                        System.out.println("Live video");
-                                        ByteArrayInputStream bis = new ByteArrayInputStream(record.value());
-                                        BufferedImage inputImage = ImageIO.read(bis);
-                                        Image imageToShow = SwingFXUtils.toFXImage(inputImage, null);
-                                        updateImageView(currentFrame, imageToShow);
-                                        consumerLiveVideo.commitAsync();
-
-                                    }
-                                } else {
-                                    attemptCount = 4;
-                                    stopAcquisition();
-                                    cameraActive = false;
-                                    // update again the button content
-                                    button.setText("Back Live ");
-                                    System.out.println("in this loop(camera one)");
-
+            Runnable imageGrab = () -> {
+                KafkaConsumer consumerLiveVideo = new KafkaConsumer(Property.loadPropertiesLive());
+                consumerLiveVideo.subscribe(Collections.singletonList(topicName[0]));
+                try {
+                    int attemptCount = 0;
+                    while (attemptCount <= 3) {
+                        ConsumerRecords<String, byte[]> recordsLive = consumerLiveVideo.poll(Duration.ofMillis(100));
+                        if (recordsLive.count() > 0) {
+                            if (cameraActive) {
+                                for (ConsumerRecord<String, byte[]> record : recordsLive) {
+                                    updateImageView(currentFrame, FXConsumerController.renderVideo(record.value()));
+                                    consumerLiveVideo.commitAsync();
                                 }
                             } else {
-                                attemptCount++;
+                                attemptCount = 4;
+                                stopAcquisition();
+                                cameraActive = false;
+                                // update again the button content
+                                button.setText("Back Live ");
                             }
+                        } else {
+                            attemptCount++;
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    } finally {
-                        System.out.println("consumer close node : ");
-                        consumerLiveVideo.close();
-                        stopAcquisition();
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    consumerLiveVideo.close();
+                    stopAcquisition();
                 }
             };
             this.timer = Executors.newSingleThreadScheduledExecutor();
             this.timer.scheduleAtFixedRate(imageGrab, 0, 33, TimeUnit.MILLISECONDS);
             // this.stopAcquisition();
-
         } else {
             // the camera is not active at this point
             cameraActive = false;
@@ -290,10 +240,22 @@ public class FXConsumerController {
 
     }
 
+    public static Image renderVideo(byte[] record) {
+        ByteArrayInputStream bis = new ByteArrayInputStream(record);
+        BufferedImage inputImage = null;
+        try {
+            inputImage = ImageIO.read(bis);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Image imageToShow = SwingFXUtils.toFXImage(inputImage, null);
 
-        /**
-         * Stop the acquisition from the frames and release all the resources
-         */
+        return imageToShow;
+    }
+
+    /**
+     * Stop the acquisition from the frames and release all the resources
+     */
 
     private void stopAcquisition() {
         if (this.timer != null && !this.timer.isShutdown()) {
