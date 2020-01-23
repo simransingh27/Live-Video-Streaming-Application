@@ -22,3 +22,8 @@ Then, tranform them to images. Presentation layer is build in JavaFX where video
 
 
 ![KafkaConsumer](https://user-images.githubusercontent.com/40739676/72839441-39bc0c00-3c8a-11ea-85ae-3d9b5a2090b8.PNG)
+
+
+This solution is merged with Facedetection project to show resuabilty of Apache Kafka. Below the architecture I have built while addressing the requirements to the Supervisor.
+
+![Architecture](https://user-images.githubusercontent.com/40739676/72951410-28582a00-3d86-11ea-9959-37e97344255d.PNG)
